@@ -71,5 +71,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   HighlightPrefab: {fileID: 100000, guid: d78a484c6e87f1b47b6596ac080fe942, type: 2}
-  AudioClips: []
+  AudioClips:
+  - {fileID: 8300000, guid: af071b2cdaf0bd54388e8265c17e8ace, type: 3}
   EdgeworkConfiguration: {fileID: 0}

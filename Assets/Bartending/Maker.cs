@@ -225,7 +225,7 @@ public class Maker : MonoBehaviour
         while (mixing)
         {
             elapsedTime += Time.deltaTime;
-            mixerScreen.transform.localEulerAngles = new Vector3(90, 0, Mathf.Sin(elapsedTime / (elapsedTime < 6 ? SlowRotationPeriod : FastRotationPeriod) * Mathf.PI * 2) * MaxTilt);
+            mixerScreen.transform.localEulerAngles = new Vector3(90, 0, Mathf.Sin(elapsedTime / (elapsedTime < 7 ? SlowRotationPeriod : FastRotationPeriod) * Mathf.PI * 2) * MaxTilt);
             yield return null;
         }
         mixerScreen.transform.localEulerAngles = new Vector3(90, 0, 0);
@@ -238,7 +238,7 @@ public class Maker : MonoBehaviour
         }
         else if (elapsedSeconds <= 10)
         {
-            input.State = elapsedSeconds <= 6 ? DrinkState.Mixed : DrinkState.Blended;
+            input.State = elapsedSeconds < 7 ? DrinkState.Mixed : DrinkState.Blended;
             var matchingRecipe = _Drinktionary.FirstOrDefault(rec => input.IsSameRecipeAs(rec, false) || input.IsSameRecipeAs(rec, true));
             if (matchingRecipe != null)
             {
@@ -489,6 +489,8 @@ public class Maker : MonoBehaviour
         // Both drinks were correct!
         Debug.LogFormat("[Bartending #{0}] Drinks correctly served! Module solved!", moduleId);
         Module.HandlePass();
+        if (Bomb.GetSolvedModuleNames().Count < Bomb.GetSolvableModuleNames().Count)
+            Audio.PlaySoundAtTransform("solve", transform);
         for (int i = 0; i < screens.Length; i++)
             screens[i].material.mainTexture = GrayScreen;
         _IsSolved = true;
