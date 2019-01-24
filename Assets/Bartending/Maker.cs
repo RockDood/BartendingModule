@@ -451,6 +451,11 @@ public class Maker : MonoBehaviour
             }
             else if (preparedDrink.State == DrinkState.Mixed || preparedDrink.State == DrinkState.Blended)
             {
+                if (expectedDrink.State == DrinkState.Bottled)
+                {
+                    StrikeAndRegenerate();
+                    return;
+                }
                 var isBigDrink = preparedDrink.IsSameRecipeAs(expectedDrink, true);
                 Debug.LogFormat("[Bartending #{0}] You submitted a {1}{2} ({3}). {4} wanted a {5}{6}.", moduleId,
                     isBigDrink ? "big " : "", preparedDrink.Name, preparedDrink.LoggingString(ingNames), currentPatron, bigDrinkExpected ? "big " : "", expectedDrink.Name);
