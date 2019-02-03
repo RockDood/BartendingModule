@@ -1,9 +1,9 @@
 using System;
 using System.Collections;
 using System.Linq;
+using KModkit;
 using UnityEngine;
 using Rnd = UnityEngine.Random;
-using KModkit;
 
 public class Maker : MonoBehaviour
 {
@@ -154,6 +154,8 @@ public class Maker : MonoBehaviour
         var drink1Index = ((ingIndices[3] + 1) * 2 + (ingIndices[4] + 1)) % 6;
         if (drink1Index > 0)
             drink1Index--;
+
+        Debug.LogFormat("[Bartending #{0}] You are now serving {1}.", moduleId, currentPatron);
 
         expectedDrink1 = FindRecipeOrBottled(patron.DrinkPreference[drink1Index]);
 
@@ -438,7 +440,7 @@ public class Maker : MonoBehaviour
 
             if (preparedDrink.State == DrinkState.Bottled)
             {
-                Debug.LogFormat("[Bartending #{0}] You submitted {1}. {2} wanted {3}.", moduleId, preparedDrink.Name, currentPatron, expectedDrink.Name);
+                Debug.LogFormat("[Bartending #{0}] You served {1}. {2} wanted {3}.", moduleId, preparedDrink.Name, currentPatron, expectedDrink.Name);
                 if (preparedDrink.Name == expectedDrink.Name)
                 {
                     Debug.LogFormat("[Bartending #{0}] The {1} drink is correct!", moduleId, slot == 0 ? "first" : "second");
@@ -453,11 +455,12 @@ public class Maker : MonoBehaviour
             {
                 if (expectedDrink.State == DrinkState.Bottled)
                 {
+                    Debug.LogFormat("[Bartending #{0}] You served a {3}, but {1} wanted a {2}.", moduleId, currentPatron, expectedDrink.Name, preparedDrink.Name);
                     StrikeAndRegenerate();
                     return;
                 }
                 var isBigDrink = preparedDrink.IsSameRecipeAs(expectedDrink, true);
-                Debug.LogFormat("[Bartending #{0}] You submitted a {1}{2} ({3}). {4} wanted a {5}{6}.", moduleId,
+                Debug.LogFormat("[Bartending #{0}] You served a {1}{2} ({3}). {4} wanted a {5}{6}.", moduleId,
                     isBigDrink ? "big " : "", preparedDrink.Name, preparedDrink.LoggingString(ingNames), currentPatron, bigDrinkExpected ? "big " : "", expectedDrink.Name);
                 if (preparedDrink.Name == expectedDrink.Name && isBigDrink == bigDrinkExpected)
                 {
@@ -471,21 +474,21 @@ public class Maker : MonoBehaviour
             }
             else if (preparedDrink.State == DrinkState.Unprepared)
             {
-                Debug.LogFormat("[Bartending #{0}] You submitted no drink in slot {1}. {2} wanted {3}.", moduleId, slot == 0 ? 1 : 2, currentPatron, expectedDrink2.State == DrinkState.Unprepared ? "1 drink" : "2 drinks");
+                Debug.LogFormat("[Bartending #{0}] You served no drink in slot {1}. {2} wanted {3}.", moduleId, slot == 0 ? 1 : 2, currentPatron, expectedDrink2.State == DrinkState.Unprepared ? "1 drink" : "2 drinks");
                 if (expectedDrink.State == DrinkState.Unprepared)
                 {
                     Debug.LogFormat("[Bartending #{0}] The {1} drink is correct!", moduleId, slot == 0 ? "first" : "second");
                 }
                 else
                 {
-                    Debug.LogFormat("[Bartending #{0}] You submitted an unprepared drink when {1} expected a drink! Strike!", moduleId, currentPatron);
+                    Debug.LogFormat("[Bartending #{0}] You served an unprepared drink when {1} expected a drink! Strike!", moduleId, currentPatron);
                     StrikeAndRegenerate();
                     return;
                 }
             }
             else
             {
-                Debug.LogFormat("[Bartending #{0}] You tried to submit a failed drink!", moduleId);
+                Debug.LogFormat("[Bartending #{0}] You tried to serve a failed drink!", moduleId);
                 StrikeAndRegenerate();
                 return;
             }
