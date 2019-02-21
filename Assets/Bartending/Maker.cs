@@ -58,7 +58,7 @@ public class Maker : MonoBehaviour
         new Recipe { Name = "Fringe Weaver", Ingredients = new[] { 0, 0, 1, 0, 9 }, Aged = true, State = DrinkState.Mixed, SpriteIndex = 15 },
         new Recipe { Name = "Blue Fairy", Ingredients = new[] { 0, 1, 4, 0, 5 }, Aged = true, State = DrinkState.Mixed, SpriteIndex = 16 },
         new Recipe { Name = "Grizzly Temple", Ingredients = new[] { 3, 0, 3, 3, 1 }, State = DrinkState.Blended, SpriteIndex = 10 },
-        new Recipe { Name = "Bloom Light", Ingredients = new[] { 1, 2, 4, 0, 3 }, Aged = true, State = DrinkState.Mixed, SpriteIndex = 7 },
+        new Recipe { Name = "Bloom Light", Ingredients = new[] { 1, 2, 4, 0, 3 }, Aged = true, Iced = true, State = DrinkState.Mixed, SpriteIndex = 7 },
         new Recipe { Name = "Frothy Water", Ingredients = new[] { 1, 1, 1, 1, 0 }, Aged = true, State = DrinkState.Mixed, SpriteIndex = 6 },
         new Recipe { Name = "Piano Woman", Ingredients = new[] { 2, 3, 5, 5, 3 }, Aged = true, State = DrinkState.Mixed, SpriteIndex = 13 },
     };
