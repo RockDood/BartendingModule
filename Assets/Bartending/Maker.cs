@@ -154,8 +154,6 @@ public class Maker : MonoBehaviour
         var drink1Index = ((ingIndices[3] + 1) * 2 + (ingIndices[4] + 1)) % 7;
         if (drink1Index > 0)
             drink1Index--;
-        Debug.LogFormat("Current Drink #1 Index is {0}", drink1Index);
-
         Debug.LogFormat("[Bartending #{0}] You are now serving {1}.", moduleId, currentPatron);
 
         expectedDrink1 = FindRecipeOrBottled(patron.DrinkPreference[drink1Index]);
@@ -163,7 +161,6 @@ public class Maker : MonoBehaviour
         if (Bomb.GetSerialNumber().Intersect("CH4S3R").Count() >= 3)
         {
             var drink2Index = (drink1Index + ingIndices[2] + 1) % 7;
-            Debug.LogFormat("Current Drink #2 Index is {0}", drink2Index);
             if (drink2Index < drink1Index)
             {
                 expectedDrink2 = expectedDrink1;
