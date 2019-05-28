@@ -3356,7 +3356,7 @@ MeshRenderer:
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
   m_Materials:
-  - {fileID: 2100000, guid: 5f9a3d1f2de088c41abe352e0c799f21, type: 2}
+  - {fileID: 0}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -5398,7 +5398,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShaderNames:
-  - Sprites/Default
+  - Sprites/Diffuse
 --- !u!114 &114188790051308730
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -5507,7 +5507,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShaderNames:
-  - Sprites/Default
+  - Sprites/Diffuse
 --- !u!114 &114231977394128512
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -6423,8 +6423,7 @@ MonoBehaviour:
   m_Script: {fileID: -1005838349, guid: 45b809be76fd7a3468b6f517bced6f28, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  ShaderNames:
-  - KT/Outline
+  ShaderNames: []
 --- !u!114 &114770716928602522
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -6529,7 +6528,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShaderNames:
-  - Sprites/Default
+  - Sprites/Diffuse
 --- !u!114 &114858408277385468
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -6592,7 +6591,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShaderNames:
-  - Sprites/Default
+  - Sprites/Diffuse
 --- !u!114 &114912508829819372
 MonoBehaviour:
   m_ObjectHideFlags: 1

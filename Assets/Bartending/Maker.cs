@@ -93,7 +93,6 @@ public class Maker : MonoBehaviour
     private bool slot2active = false;
     private bool bottleDrinkMenuVisible = false;
     private int[] ingIndices = new int[5];
-    private Coroutine mixingActive;
 
     void Awake()
     {
@@ -160,7 +159,7 @@ public class Maker : MonoBehaviour
 
         if (Bomb.GetSerialNumber().Intersect("CH4S3R").Count() >= 3)
         {
-            var drink2Index = (drink1Index + ingIndices[2] + 1) % 7;
+            var drink2Index = (drink1Index + ingIndices[2] + 1) % 6;
             if (drink2Index < drink1Index)
             {
                 expectedDrink2 = expectedDrink1;
@@ -208,7 +207,7 @@ public class Maker : MonoBehaviour
         if ((slot2active ? slot2input : slot1input).State == DrinkState.Unprepared)
         {
             mixing = true;
-            mixingActive = StartCoroutine(mixCoroutine());
+            StartCoroutine(mixCoroutine());
         }
         else
         {
