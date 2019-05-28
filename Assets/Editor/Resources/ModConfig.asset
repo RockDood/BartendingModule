@@ -13,11 +13,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   id: BartendingModule
   title: Bartending
-  description: 'So a guy walks into a bomb...wait...that''s not how the joke is supposed
-    to go...
-
-
-    HTML Manual: https://ktane.timwi.de/HTML/Bartending.html'
-  version: 1.0
+  author: RockDood
+  description: "So a guy walks into a bomb...wait...that's not how the joke is supposed
+    to go...\r\n\r\nHTML Manual: https://ktane.timwi.de/HTML/Bartending.html\n\nModule
+    ID: BartendingModule"
+  version: v1.6
   outputFolder: D:\Steam\steamapps\common\Keep Talking and Nobody Explodes\Mods
-  previewImage: {fileID: 2800000, guid: cda3251bbeab640488360ab2f7006652, type: 3}
+  previewImage: {fileID: 2800000, guid: 5d933d05940f89f43818c3cfcad6943a, type: 3}

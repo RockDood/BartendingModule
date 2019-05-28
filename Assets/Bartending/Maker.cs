@@ -70,7 +70,7 @@ public class Maker : MonoBehaviour
         new Patron { Customer = "Karl", DrinkPreference = new[] {"Piano Man", "Rum", "Grizzly Temple", "Mulan Tea", "Absinthe", "Frothy Water"}, },
         new Patron { Customer = "Konrad", DrinkPreference = new[] {"Mulan Tea", "Frothy Water", "Fluffy Dream", "Bleeding Jane", "Rum", "A Fedora"}, },
         new Patron { Customer = "Vivi", DrinkPreference = new[] {"Fluffy Dream", "Moonblast", "Absinthe", "Piano Man", "Beer", "Fringe Weaver"}, },
-        new Patron { Customer = "Engilika", DrinkPreference = new[] {"Piano Woman", "Blue Fairy", "A Fedora", "Absinthe", "Bleeding Jane", "Grizzly Temple"}, },
+        new Patron { Customer = "Angelika", DrinkPreference = new[] {"Piano Woman", "Blue Fairy", "A Fedora", "Absinthe", "Bleeding Jane", "Grizzly Temple"}, },
         new Patron { Customer = "Donna", DrinkPreference = new[] {"Beer", "Sugar Rush", "Piano Woman", "Bloom Light", "Moonblast", "Mulan Tea"}, },
         new Patron { Customer = "Gabe", DrinkPreference = new[] {"Moonblast", "Mulan Tea", "Sugar Rush", "A Fedora", "Frothy Water", "Bloom Light"}, },
         new Patron { Customer = "Clayton", DrinkPreference = new[] {"Grizzly Temple", "Bloom Light", "Bleeding Jane", "Fringe Weaver", "Piano Man", "Beer"}, },
@@ -151,9 +151,10 @@ public class Maker : MonoBehaviour
 
         var patron = _customerPreferences[((ingIndices[0] + 1) * 2 + (ingIndices[1] + 1)) % 10];
         currentPatron = patron.Customer;
-        var drink1Index = ((ingIndices[3] + 1) * 2 + (ingIndices[4] + 1)) % 6;
+        var drink1Index = ((ingIndices[3] + 1) * 2 + (ingIndices[4] + 1)) % 7;
         if (drink1Index > 0)
             drink1Index--;
+        Debug.LogFormat("Current Drink #1 Index is {0}", drink1Index);
 
         Debug.LogFormat("[Bartending #{0}] You are now serving {1}.", moduleId, currentPatron);
 
@@ -161,7 +162,8 @@ public class Maker : MonoBehaviour
 
         if (Bomb.GetSerialNumber().Intersect("CH4S3R").Count() >= 3)
         {
-            var drink2Index = (drink1Index + ingIndices[2] + 1) % 6;
+            var drink2Index = (drink1Index + ingIndices[2] + 1) % 7;
+            Debug.LogFormat("Current Drink #2 Index is {0}", drink2Index);
             if (drink2Index < drink1Index)
             {
                 expectedDrink2 = expectedDrink1;
