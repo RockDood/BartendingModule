@@ -94,8 +94,9 @@ public class Maker : MonoBehaviour
     private bool slot2active = false;
     private bool bottleDrinkMenuVisible = false;
     private int[] ingIndices = new int[5];
+    private int _Blank = 0;
 
-    void Awake()
+void Awake()
     {
         moduleId = moduleIdCounter++;
 
@@ -500,6 +501,8 @@ public class Maker : MonoBehaviour
             Audio.PlaySoundAtTransform("solve", transform);
         for (int i = 0; i < screens.Length; i++)
             screens[i].material.mainTexture = GrayScreen;
+        for (int i = 0; i < ingNames.Length; i++)
+            ingValuesText[i].text = _Blank.ToString();
         _IsSolved = true;
     }
 
@@ -527,7 +530,7 @@ public class Maker : MonoBehaviour
     }
 
 #pragma warning disable 414
-    private readonly string TwitchHelpMessage = @"!{0} add 1 9, 2 2 [add 9 times ingredient 1, 2 times ingredient 2] | !{0} slot 1 | !{0} slot 2 | !{0} trash | !{0} mix 4 [mix for that many seconds] | !{0} iced | !{0} aged | !{0} bottled A Fedora | !{0} serve";
+    private readonly string TwitchHelpMessage = @"!{0} add 1 9, 2 2 [add 9 times ingredient 1, 2 times ingredient 2] | !{0} slot 1 | !{0} slot 2 | !{0} trash | !{0} iced | !{0} aged | !{0} mix 4 [mix for that many seconds] | !{0} bottled A Fedora | !{0} serve";
 #pragma warning restore 414
 
     public IEnumerator ProcessTwitchCommand(string command)
