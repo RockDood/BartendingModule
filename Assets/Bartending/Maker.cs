@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Linq;
+using System.Text.RegularExpressions;
 using KModkit;
 using UnityEngine;
 using Rnd = UnityEngine.Random;
@@ -524,6 +525,106 @@ public class Maker : MonoBehaviour
         }
         return list;
     }
+
+#pragma warning disable 414
+    private readonly string TwitchHelpMessage = @"!{0} add 1 9, 2 2 [add 9 times ingredient 1, 2 times ingredient 2] | !{0} slot 1 | !{0} slot 2 | !{0} trash | !{0} mix 4 [mix for that many seconds] | !{0} iced | !{0} aged | !{0} bottled A Fedora | !{0} serve";
+#pragma warning restore 414
+
+    public IEnumerator ProcessTwitchCommand(string command)
+    {
+        Match match;
+
+        // !{0} add 1 9, 2 2 [add 9 times ingredient 1, 2 times ingredient 2]
+        if ((match = Regex.Match(command, @"^\s*add\s+(\d\s+\d+(,\s*\d\s+\d+)*)\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)).Success)
+        {
+            var data = match.Groups[1].Value.Split(',')
+                .Select(inf => Regex.Match(inf, @"^\s*(\d+)\s+(\d+)\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
+                .Select(m => new { Ingredient = int.Parse(m.Groups[1].Value), Amount = int.Parse(m.Groups[2].Value) })
+                .ToArray();
+            if (data.Any(inf => inf.Ingredient < 1 || inf.Ingredient > 6 || inf.Amount < 1 || inf.Amount > 20))
+            {
+                yield return "sendtochaterror Ingredients must be 1–6 (reading order) and amount must be 1–20.";
+                yield break;
+            }
+            yield return null;
+            yield return data.SelectMany(inf => Enumerable.Repeat(ingredients[inf.Ingredient - 1], inf.Amount)).ToArray();
+            yield break;
+        }
+
+        // !{0} slot 1, slot 2
+        else if ((match = Regex.Match(command, @"^\s*slot\s+([12])\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)).Success)
+        {
+            yield return null;
+            if (bottleDrinkMenuVisible)
+                yield return new[] { close };
+            yield return new[] { match.Groups[1].Value == "1" ? slot1 : slot2 };
+        }
+
+        // !{0} trash
+        else if (Regex.IsMatch(command, @"^\s*trash\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
+        {
+            yield return null;
+            if (bottleDrinkMenuVisible)
+                yield return new[] { close };
+            yield return new[] { trash };
+        }
+
+        // !{0} mix 4 [mix for that many seconds]
+        else if ((match = Regex.Match(command, @"^\s*mix\s+(\d+)\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)).Success)
+        {
+            yield return null;
+            if (bottleDrinkMenuVisible)
+                yield return new[] { close };
+            yield return new[] { mix };
+            yield return new WaitForSeconds(int.Parse(match.Groups[1].Value));
+            yield return new[] { mix };
+        }
+
+        // !{0} iced
+        else if (Regex.IsMatch(command, @"^\s*iced\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
+        {
+            yield return null;
+            if (bottleDrinkMenuVisible)
+                yield return new[] { close };
+            yield return new[] { iced };
+        }
+
+        // !{0} aged
+        else if (Regex.IsMatch(command, @"^\s*aged\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
+        {
+            yield return null;
+            if (bottleDrinkMenuVisible)
+                yield return new[] { close };
+            yield return new[] { aged };
+        }
+
+        // !{0} bottled <drink>
+        else if ((match = Regex.Match(command, @"^\s*bottled\s+(.*?)\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)).Success)
+        {
+            var button =
+                Regex.IsMatch(match.Groups[1].Value, @"^\s*absinthe\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant) ? BottledOptions[0] :
+                Regex.IsMatch(match.Groups[1].Value, @"^\s*rum\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant) ? BottledOptions[1] :
+                Regex.IsMatch(match.Groups[1].Value, @"^\s*mulan\s+tea\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant) ? BottledOptions[2] :
+                Regex.IsMatch(match.Groups[1].Value, @"^\s*a\s+fedora\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant) ? BottledOptions[3] : null;
+            if (button == null)
+            {
+                yield return @"sendtochaterror That’s not a bottled drink I recognize!";
+                yield break;
+            }
+
+            yield return null;
+            if (!bottleDrinkMenuVisible)
+                yield return new[] { bottled };
+            yield return new[] { button };
+        }
+
+        // !{0} serve
+        else if (Regex.IsMatch(command, @"^\s*serve\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
+        {
+            yield return null;
+            if (bottleDrinkMenuVisible)
+                yield return new[] { close };
+            yield return new[] { serve };
+        }
+    }
 }
-
-
