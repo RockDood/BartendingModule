@@ -96,7 +96,7 @@ public class Maker : MonoBehaviour
     private int[] ingIndices = new int[5];
     private int _Blank = 0;
 
-void Awake()
+    void Awake()
     {
         moduleId = moduleIdCounter++;
 
@@ -531,6 +531,7 @@ void Awake()
 
 #pragma warning disable 414
     private readonly string TwitchHelpMessage = @"!{0} add 1 9, 2 2 [add 9 times ingredient 1, 2 times ingredient 2] | !{0} slot 1 | !{0} slot 2 | !{0} trash | !{0} iced | !{0} aged | !{0} mix 4 [mix for that many seconds] | !{0} bottled A Fedora | !{0} serve";
+    private bool TwitchShouldCancelCommand;
 #pragma warning restore 414
 
     public IEnumerator ProcessTwitchCommand(string command)
@@ -550,6 +551,10 @@ void Awake()
                 yield break;
             }
             yield return null;
+            if (bottleDrinkMenuVisible)
+                yield return new[] { close };
+            if (mixing)
+                yield return new[] { mix };
             yield return data.SelectMany(inf => Enumerable.Repeat(ingredients[inf.Ingredient - 1], inf.Amount)).ToArray();
             yield break;
         }
@@ -560,6 +565,8 @@ void Awake()
             yield return null;
             if (bottleDrinkMenuVisible)
                 yield return new[] { close };
+            if (mixing)
+                yield return new[] { mix };
             yield return new[] { match.Groups[1].Value == "1" ? slot1 : slot2 };
         }
 
@@ -569,18 +576,46 @@ void Awake()
             yield return null;
             if (bottleDrinkMenuVisible)
                 yield return new[] { close };
+            if (mixing)
+                yield return new[] { mix };
             yield return new[] { trash };
+        }
+
+        else if (Regex.IsMatch(command, @"^\s*stopmixing\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
+        {
+            if (mixing)
+            {
+                yield return null;
+                yield return new[] { mix };
+            }
         }
 
         // !{0} mix 4 [mix for that many seconds]
         else if ((match = Regex.Match(command, @"^\s*mix\s+(\d+)\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)).Success)
         {
+            if (mixing)
+            {
+                yield return "sendtochaterror The drink is already mixing. To cancel it, use: !{0} stopmixing";
+                yield break;
+            }
+
             yield return null;
             if (bottleDrinkMenuVisible)
                 yield return new[] { close };
+
+            mix.OnInteract();
+            var remainingDuration = float.Parse(match.Groups[1].Value);
+            TwitchShouldCancelCommand = false;
+
+            while (remainingDuration > 0 && !TwitchShouldCancelCommand)
+            {
+                yield return null;
+                remainingDuration -= Time.deltaTime;
+            }
             yield return new[] { mix };
-            yield return new WaitForSeconds(int.Parse(match.Groups[1].Value));
-            yield return new[] { mix };
+
+            if (TwitchShouldCancelCommand)
+                yield return "cancelled";
         }
 
         // !{0} iced
@@ -589,6 +624,8 @@ void Awake()
             yield return null;
             if (bottleDrinkMenuVisible)
                 yield return new[] { close };
+            if (mixing)
+                yield return new[] { mix };
             yield return new[] { iced };
         }
 
@@ -598,6 +635,8 @@ void Awake()
             yield return null;
             if (bottleDrinkMenuVisible)
                 yield return new[] { close };
+            if (mixing)
+                yield return new[] { mix };
             yield return new[] { aged };
         }
 
@@ -616,6 +655,8 @@ void Awake()
             }
 
             yield return null;
+            if (mixing)
+                yield return new[] { mix };
             if (!bottleDrinkMenuVisible)
                 yield return new[] { bottled };
             yield return new[] { button };
@@ -627,6 +668,8 @@ void Awake()
             yield return null;
             if (bottleDrinkMenuVisible)
                 yield return new[] { close };
+            if (mixing)
+                yield return new[] { mix };
             yield return new[] { serve };
         }
     }
