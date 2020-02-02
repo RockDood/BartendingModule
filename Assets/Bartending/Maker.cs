@@ -545,9 +545,9 @@ public class Maker : MonoBehaviour
                 .Select(inf => Regex.Match(inf, @"^\s*(\d+)\s+(\d+)\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
                 .Select(m => new { Ingredient = int.Parse(m.Groups[1].Value), Amount = int.Parse(m.Groups[2].Value) })
                 .ToArray();
-            if (data.Any(inf => inf.Ingredient < 1 || inf.Ingredient > 6 || inf.Amount < 1 || inf.Amount > 20))
+            if (data.Any(inf => inf.Ingredient < 1 || inf.Ingredient > 5 || inf.Amount < 1 || inf.Amount > 20))
             {
-                yield return "sendtochaterror Ingredients must be 1–6 (reading order) and amount must be 1–20.";
+                yield return "sendtochaterror Ingredients must be 1–5 (reading order) and amount must be 1–20.";
                 yield break;
             }
             yield return null;
