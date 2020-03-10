@@ -79,7 +79,7 @@ public class Maker : MonoBehaviour
     };
 
     Recipe slot1input = new Recipe { Ingredients = new[] { 0, 0, 0, 0, 0 } };
-    Recipe slot2input = new Recipe { Name = null, Ingredients = new[] { 0, 0, 0, 0, 0 }, };
+    Recipe slot2input = new Recipe { Name = null, Ingredients = new[] { 0, 0, 0, 0, 0 } };
 
     Recipe expectedDrink1;
     Recipe expectedDrink2;
