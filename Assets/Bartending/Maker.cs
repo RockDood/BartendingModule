@@ -79,7 +79,7 @@ public class Maker : MonoBehaviour
     };
 
     Recipe slot1input = new Recipe { Ingredients = new[] { 0, 0, 0, 0, 0 } };
-    Recipe slot2input = new Recipe { Name = null, Ingredients = new[] { 0, 0, 0, 0, 0 } };
+    Recipe slot2input = new Recipe { Name = null, Ingredients = new[] { 0, 0, 0, 0, 0 }, };
 
     Recipe expectedDrink1;
     Recipe expectedDrink2;
@@ -432,6 +432,13 @@ public class Maker : MonoBehaviour
         serve.AddInteractionPunch();
         if (_IsSolved)
             return;
+
+        if (expectedDrink2.Name == null && slot2input.State != DrinkState.Unprepared)
+        {
+            Debug.LogFormat("[Bartending #{0}] You served an extra drink.", moduleId);
+            StrikeAndRegenerate();
+            return;
+        }
 
         for (int slot = 0; slot < 2; slot++)
         {
