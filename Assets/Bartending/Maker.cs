@@ -94,6 +94,7 @@ public class Maker : MonoBehaviour
     private bool slot2active = false;
     private bool bottleDrinkMenuVisible = false;
     private int[] ingIndices = new int[5];
+    //private int[] ingTest = new[] { 1, 4, 3, 2, 0 };
     private int _Blank = 0;
 
     void Awake()
@@ -144,6 +145,7 @@ public class Maker : MonoBehaviour
     {
         // Shuffle up the ingredients
         ingIndices = Shuffle(Enumerable.Range(0, 5).ToArray());
+        //ingIndices = ingTest;
         Debug.LogFormat("[Bartending #{0}] Ingredients are: {1}", moduleId, string.Join(", ", ingIndices.Select(ix => ingNames[ix]).ToArray()));
 
         // Assign the screen-frame textures for the ingredients
@@ -438,7 +440,7 @@ public class Maker : MonoBehaviour
             var preparedDrink = slot == 1 ? slot2input : slot1input;
             var expectedDrink = slot == 1 ? expectedDrink2 : expectedDrink1;
 
-            if (preparedDrink.State == DrinkState.Bottled)
+            if (expectedDrink.State == DrinkState.Bottled)
             {
                 Debug.LogFormat("[Bartending #{0}] You served {1}. {2} wanted {3}.", moduleId, preparedDrink.Name, currentPatron, expectedDrink.Name);
                 if (preparedDrink.Name == expectedDrink.Name)
@@ -451,9 +453,9 @@ public class Maker : MonoBehaviour
                     return;
                 }
             }
-            else if (preparedDrink.State == DrinkState.Mixed || preparedDrink.State == DrinkState.Blended)
+            else if (expectedDrink.State == DrinkState.Mixed || expectedDrink.State == DrinkState.Blended)
             {
-                if (expectedDrink.State == DrinkState.Bottled)
+                if (preparedDrink.State == DrinkState.Bottled)
                 {
                     Debug.LogFormat("[Bartending #{0}] You served a {3}, but {1} wanted a {2}.", moduleId, currentPatron, expectedDrink.Name, preparedDrink.Name);
                     StrikeAndRegenerate();
@@ -472,10 +474,10 @@ public class Maker : MonoBehaviour
                     return;
                 }
             }
-            else if (preparedDrink.State == DrinkState.Unprepared)
+            else if (expectedDrink.State == DrinkState.Unprepared)
             {
                 Debug.LogFormat("[Bartending #{0}] You served no drink in slot {1}. {2} wanted {3}.", moduleId, slot == 0 ? 1 : 2, currentPatron, expectedDrink2.State == DrinkState.Unprepared ? "1 drink" : "2 drinks");
-                if (expectedDrink.State == DrinkState.Unprepared)
+                if (preparedDrink.State == DrinkState.Unprepared)
                 {
                     Debug.LogFormat("[Bartending #{0}] The {1} drink is correct!", moduleId, slot == 0 ? "first" : "second");
                 }
