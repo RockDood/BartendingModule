@@ -179,12 +179,13 @@ public class Maker : MonoBehaviour
                     _drinktionary[dr].Ingredients.Join(", "), _drinktionary[dr].Aged, _drinktionary[dr].Iced, _drinktionary[dr].State);
             }
 
-            var allDrinks = nonBottledDrinks.Concat(Drink.AllDrinks.Where(d => d.Bottled)).ToList();
+            var allDrinks = nonBottledDrinks.Take(_drinktionary.Length).Concat(Drink.AllDrinks.Where(d => d.Bottled)).ToList();
             _customerPreferences = new Drink[_patronNames.Length][];
             for (var c = 0; c < _patronNames.Length; c++)
             {
                 rnd.ShuffleFisherYates(allDrinks);
                 _customerPreferences[c] = allDrinks.Take(6).ToArray();
+                Debug.LogFormat(@"<Bartending #{0}> Customer {1} preferences: {2}", _moduleId, _patronNames[c], _customerPreferences[c].Select(d => d.Name).Join(", "));
             }
             _ingredientValues = rnd.ShuffleFisherYates(new[] { 1, 2, 3, 4, 5 });
             Debug.LogFormat(@"<Bartending #{0}> Ingredient values = [{1}]", _moduleId, _ingredientValues.Join(", "));
