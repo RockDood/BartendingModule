@@ -227,10 +227,10 @@ void Awake()
         while (mixing)
         {
             elapsedTime += Time.deltaTime;
-            mixerScreen.transform.localEulerAngles = new Vector3(90, 0, Mathf.Sin(elapsedTime / (elapsedTime < 7 ? SlowRotationPeriod : FastRotationPeriod) * Mathf.PI * 2) * MaxTilt);
+            mixerScreen.transform.localEulerAngles = new Vector3(0, 0, Mathf.Sin(elapsedTime / (elapsedTime < 7 ? SlowRotationPeriod : FastRotationPeriod) * Mathf.PI * 2) * MaxTilt);
             yield return null;
         }
-        mixerScreen.transform.localEulerAngles = new Vector3(90, 0, 0);
+        mixerScreen.transform.localEulerAngles = new Vector3(0, 0, 0);
         var elapsedSeconds = Mathf.FloorToInt(elapsedTime);
         if (elapsedSeconds <= 3)
         {
