@@ -12,6 +12,7 @@ public class Maker : MonoBehaviour
     public KMAudio Audio;
     public KMBombInfo Bomb;
     public KMBombModule Module;
+    public KMRuleSeedable RuleSeedable;
 
     //Buttons
     public KMSelectable serve;
@@ -40,65 +41,81 @@ public class Maker : MonoBehaviour
     public Renderer[] screens;
     public GameObject BottledScreen;
     public Texture2D GrayScreen;
-    private static readonly string[] ingNames = { "Powdered Delta", "Flanergide", "Adelhyde", "Bronson Extract", "Karmotrine" };
-    private static readonly string[] bottledOptions = { "Absinthe", "Rum", "Mulan Tea", "A Fedora" };
     private bool mixing = false;
-    const float MaxTilt = 45f;
-    const float SlowRotationPeriod = 1f;
-    const float FastRotationPeriod = .3f;
-    private float InteractionPunchIntensityModifier = .5f;
 
-    private static readonly Recipe[] _Drinktionary = new Recipe[]
+    private const int _failedDrinkSpriteIndex = 5;
+    private const float _maxTilt = 45f;
+    private const float _slowRotationPeriod = 1f;
+    private const float _fastRotationPeriod = .3f;
+    private const float _interactionPunchIntensity = .5f;
+
+    // The patron names don’t have any impact on the rules, so they stay the same in all rule seeds
+    private static readonly string[] _patronNames = { "Barbara", "Patricia", "Karl", "Konrad", "Vivi", "Angelika", "Donna", "Gabe", "Clayton", "Chip" };
+    private static readonly string[] _ingNames = { "Powdered Delta", "Flanergide", "Adelhyde", "Bronson Extract", "Karmotrine" };
+    private static readonly Drink[] _bottledOptions = { Drink.Absinthe, Drink.Rum, Drink.MulanTea, Drink.AFedora };
+
+    private static readonly Recipe[] _seed1_drinktionary = new Recipe[]
     {
-        new Recipe { Name = "Beer", Ingredients = new[] { 1, 2, 1, 2, 4 }, State = DrinkState.Mixed, SpriteIndex = 6 },
-        new Recipe { Name = "Fluffy Dream", Ingredients = new[] { 3, 0, 3, 0, 2 }, Aged = true, State = DrinkState.Mixed, SpriteIndex = 9 },
-        new Recipe { Name = "Bleeding Jane", Ingredients = new[] { 3, 3, 0, 1, 4 }, State = DrinkState.Blended, SpriteIndex = 8 },
-        new Recipe { Name = "Sugar Rush", Ingredients = new[] { 1, 0, 2, 0, 4 }, State = DrinkState.Mixed, SpriteIndex = 14 },
-        new Recipe { Name = "Piano Man", Ingredients = new[] { 1, 1, 6, 3, 2 }, Iced = true, State = DrinkState.Blended, SpriteIndex = 12 },
-        new Recipe { Name = "Moonblast", Ingredients = new[] { 1, 1, 6, 0, 2 }, Iced = true, State = DrinkState.Blended, SpriteIndex = 11 },
-        new Recipe { Name = "Fringe Weaver", Ingredients = new[] { 0, 0, 1, 0, 9 }, Aged = true, State = DrinkState.Mixed, SpriteIndex = 15 },
-        new Recipe { Name = "Blue Fairy", Ingredients = new[] { 0, 1, 4, 0, 5 }, Aged = true, State = DrinkState.Mixed, SpriteIndex = 16 },
-        new Recipe { Name = "Grizzly Temple", Ingredients = new[] { 3, 0, 3, 3, 1 }, State = DrinkState.Blended, SpriteIndex = 10 },
-        new Recipe { Name = "Bloom Light", Ingredients = new[] { 1, 2, 4, 0, 3 }, Aged = true, Iced = true, State = DrinkState.Mixed, SpriteIndex = 7 },
-        new Recipe { Name = "Frothy Water", Ingredients = new[] { 1, 1, 1, 1, 0 }, Aged = true, State = DrinkState.Mixed, SpriteIndex = 6 },
-        new Recipe { Name = "Piano Woman", Ingredients = new[] { 2, 3, 5, 5, 3 }, Aged = true, State = DrinkState.Mixed, SpriteIndex = 13 },
+        new Recipe { Drink = Drink.Beer, Ingredients = new[] { 1, 2, 1, 2, 4 }, State = DrinkState.Mixed },
+        new Recipe { Drink = Drink.FluffyDream, Ingredients = new[] { 3, 0, 3, 0, 2 }, Aged = true, State = DrinkState.Mixed },
+        new Recipe { Drink = Drink.BleedingJane, Ingredients = new[] { 3, 3, 0, 1, 4 }, State = DrinkState.Blended },
+        new Recipe { Drink = Drink.SugarRush, Ingredients = new[] { 1, 0, 2, 0, 4 }, State = DrinkState.Mixed },
+        new Recipe { Drink = Drink.PianoMan, Ingredients = new[] { 1, 1, 6, 3, 2 }, Iced = true, State = DrinkState.Blended },
+        new Recipe { Drink = Drink.Moonblast, Ingredients = new[] { 1, 1, 6, 0, 2 }, Iced = true, State = DrinkState.Blended },
+        new Recipe { Drink = Drink.FringeWeaver, Ingredients = new[] { 0, 0, 1, 0, 9 }, Aged = true, State = DrinkState.Mixed },
+        new Recipe { Drink = Drink.BlueFairy, Ingredients = new[] { 0, 1, 4, 0, 5 }, Aged = true, State = DrinkState.Mixed },
+        new Recipe { Drink = Drink.GrizzlyTemple, Ingredients = new[] { 3, 0, 3, 3, 1 }, State = DrinkState.Blended },
+        new Recipe { Drink = Drink.BloomLight, Ingredients = new[] { 1, 2, 4, 0, 3 }, Aged = true, Iced = true, State = DrinkState.Mixed },
+        new Recipe { Drink = Drink.FrothyWater, Ingredients = new[] { 1, 1, 1, 1, 0 }, Aged = true, State = DrinkState.Mixed },
+        new Recipe { Drink = Drink.PianoWoman, Ingredients = new[] { 2, 3, 5, 5, 3 }, Aged = true, State = DrinkState.Mixed },
     };
 
-    private static readonly Patron[] _customerPreferences = new Patron[]
+    private static readonly Drink[][] _seed1_customerPreferences = new Drink[][]
     {
-        new Patron { Customer = "Barbara", DrinkPreference = new[] {"Blue Fairy", "Piano Man", "Frothy Water", "Piano Woman", "Fringe Weaver", "Absinthe"}, },
-        new Patron { Customer = "Patricia", DrinkPreference = new[] {"Frothy Water", "Piano Woman", "Fringe Weaver", "Grizzly Temple", "A Fedora", "Rum"}, },
-        new Patron { Customer = "Karl", DrinkPreference = new[] {"Piano Man", "Rum", "Grizzly Temple", "Mulan Tea", "Absinthe", "Frothy Water"}, },
-        new Patron { Customer = "Konrad", DrinkPreference = new[] {"Mulan Tea", "Frothy Water", "Fluffy Dream", "Bleeding Jane", "Rum", "A Fedora"}, },
-        new Patron { Customer = "Vivi", DrinkPreference = new[] {"Fluffy Dream", "Moonblast", "Absinthe", "Piano Man", "Beer", "Fringe Weaver"}, },
-        new Patron { Customer = "Angelika", DrinkPreference = new[] {"Piano Woman", "Blue Fairy", "A Fedora", "Absinthe", "Bleeding Jane", "Grizzly Temple"}, },
-        new Patron { Customer = "Donna", DrinkPreference = new[] {"Beer", "Sugar Rush", "Piano Woman", "Bloom Light", "Moonblast", "Mulan Tea"}, },
-        new Patron { Customer = "Gabe", DrinkPreference = new[] {"Moonblast", "Mulan Tea", "Sugar Rush", "A Fedora", "Frothy Water", "Bloom Light"}, },
-        new Patron { Customer = "Clayton", DrinkPreference = new[] {"Grizzly Temple", "Bloom Light", "Bleeding Jane", "Fringe Weaver", "Piano Man", "Beer"}, },
-        new Patron { Customer = "Chip", DrinkPreference = new[] {"Bleeding Jane", "Grizzly Temple", "Moonblast", "Sugar Rush", "Blue Fairy", "Fluffy Dream"}, },
+        new[] { Drink.BlueFairy, Drink.PianoMan, Drink.FrothyWater, Drink.PianoWoman, Drink.FringeWeaver, Drink.Absinthe },
+        new[] { Drink.FrothyWater, Drink.PianoWoman, Drink.FringeWeaver, Drink.GrizzlyTemple, Drink.AFedora, Drink.Rum },
+        new[] { Drink.PianoMan, Drink.Rum, Drink.GrizzlyTemple, Drink.MulanTea, Drink.Absinthe, Drink.FrothyWater },
+        new[] { Drink.MulanTea, Drink.FrothyWater, Drink.FluffyDream, Drink.BleedingJane, Drink.Rum, Drink.AFedora },
+        new[] { Drink.FluffyDream, Drink.Moonblast, Drink.Absinthe, Drink.PianoMan, Drink.Beer, Drink.FringeWeaver },
+        new[] { Drink.PianoWoman, Drink.BlueFairy, Drink.AFedora, Drink.Absinthe, Drink.BleedingJane, Drink.GrizzlyTemple },
+        new[] { Drink.Beer, Drink.SugarRush, Drink.PianoWoman, Drink.BloomLight, Drink.Moonblast, Drink.MulanTea },
+        new[] { Drink.Moonblast, Drink.MulanTea, Drink.SugarRush, Drink.AFedora, Drink.FrothyWater, Drink.BloomLight },
+        new[] { Drink.GrizzlyTemple, Drink.BloomLight, Drink.BleedingJane, Drink.FringeWeaver, Drink.PianoMan, Drink.Beer },
+        new[] { Drink.BleedingJane, Drink.GrizzlyTemple, Drink.Moonblast, Drink.SugarRush, Drink.BlueFairy, Drink.FluffyDream },
     };
 
-    Recipe slot1input = new Recipe { Ingredients = new[] { 0, 0, 0, 0, 0 } };
-    Recipe slot2input = new Recipe { Name = null, Ingredients = new[] { 0, 0, 0, 0, 0 } };
+    private static readonly int[] _seed1_ingredientValues = { 1, 2, 3, 4, 5 };
+    private static readonly string _seed1_chaser = "CH4S3R";
+    private static readonly string _seed1_big = "B1G";
 
-    Recipe expectedDrink1;
-    Recipe expectedDrink2;
-    private string currentPatron;
+    private Recipe[] _drinktionary;
+    private Drink[][] _customerPreferences;
+    private int[] _ingredientValues;
+    private string _chaser;
+    private string _big;
+
+    readonly Recipe slot1input = new Recipe { Drink = null, Ingredients = new[] { 0, 0, 0, 0, 0 } };
+    readonly Recipe slot2input = new Recipe { Drink = null, Ingredients = new[] { 0, 0, 0, 0, 0 } };
+
+    Drink expectedDrink1;
+    Drink expectedDrink2;
+    private int currentPatron;
     private bool bigDrinkExpected;
     private bool _IsSolved = false;
 
     public TextMesh[] ingValuesText;
 
-    static int moduleIdCounter = 1;
-    int moduleId;
+    static int _moduleIdCounter = 1;
+    int _moduleId;
     private bool slot2active = false;
     private bool bottleDrinkMenuVisible = false;
     private int[] ingIndices = new int[5];
+    //private int[] ingTest = new[] { 1, 4, 3, 2, 0 };
     private int _Blank = 0;
 
-void Awake()
+    void Awake()
     {
-        moduleId = moduleIdCounter++;
+        _moduleId = _moduleIdCounter++;
 
         for (var i = 0; i < ingredients.Length; i++)
         {
@@ -124,6 +141,60 @@ void Awake()
     void Start()
     {
         StartCoroutine(animateButton(slot1Transform, true));
+
+        // Rule seed!
+        var rnd = RuleSeedable.GetRNG();
+        if (rnd.Seed == 1)
+        {
+            _drinktionary = _seed1_drinktionary;
+            _customerPreferences = _seed1_customerPreferences;
+            _ingredientValues = _seed1_ingredientValues;
+            _chaser = _seed1_chaser;
+            _big = _seed1_big;
+        }
+        else
+        {
+            _drinktionary = new Recipe[12];
+            var nonBottledDrinks = rnd.ShuffleFisherYates(Drink.AllDrinks.Where(d => !d.Bottled).ToList());
+            for (var dr = 0; dr < _drinktionary.Length; dr++)
+            {
+                var ingredients = new int[5];
+                var iter = 0;
+                do
+                {
+                    iter++;
+                    for (var ing = 0; ing < 5; ing++)
+                        // Cube the random number to allow lower numbers to occur more frequently and high numbers less frequently
+                        ingredients[ing] = (int) (10 * Math.Pow(rnd.NextDouble(), 3));
+                    if (iter > 1000)
+                    {
+                        Debug.LogFormat(@"<Bartending #{0}> iteration fail", _moduleId);
+                        return;
+                    }
+                }
+                while (_drinktionary.Take(dr).Any(d => d.Ingredients.SequenceEqual(ingredients)));
+
+                _drinktionary[dr] = new Recipe { Drink = nonBottledDrinks[dr], Ingredients = ingredients, Aged = rnd.Next(0, 2) != 0, Iced = rnd.Next(0, 2) != 0, State = rnd.Next(0, 2) != 0 ? DrinkState.Blended : DrinkState.Mixed };
+                Debug.LogFormat(@"<Bartending #{0}> Drinktionary entry {1}: {2} [{3}] Aged={4}, Iced={5}, {6}", _moduleId, dr + 1, _drinktionary[dr].Drink.Name,
+                    _drinktionary[dr].Ingredients.Join(", "), _drinktionary[dr].Aged, _drinktionary[dr].Iced, _drinktionary[dr].State);
+            }
+
+            var allDrinks = nonBottledDrinks.Take(_drinktionary.Length).Concat(Drink.AllDrinks.Where(d => d.Bottled)).ToList();
+            _customerPreferences = new Drink[_patronNames.Length][];
+            for (var c = 0; c < _patronNames.Length; c++)
+            {
+                rnd.ShuffleFisherYates(allDrinks);
+                _customerPreferences[c] = allDrinks.Take(6).ToArray();
+                Debug.LogFormat(@"<Bartending #{0}> Customer {1} preferences: {2}", _moduleId, _patronNames[c], _customerPreferences[c].Select(d => d.Name).Join(", "));
+            }
+            _ingredientValues = rnd.ShuffleFisherYates(new[] { 1, 2, 3, 4, 5 });
+            Debug.LogFormat(@"<Bartending #{0}> Ingredient values = [{1}]", _moduleId, _ingredientValues.Join(", "));
+            var chars = rnd.ShuffleFisherYates("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ".ToCharArray()).Join("");
+            _chaser = chars.Substring(0, 6);
+            _big = chars.Substring(6, 3);
+            Debug.LogFormat(@"<Bartending #{0}> Chaser = {1}, Big = {2}", _moduleId, _chaser, _big);
+        }
+
         GenerateModule();
         closeMenu();
     }
@@ -133,7 +204,7 @@ void Awake()
         if (_IsSolved)
             return;
         Audio.PlayGameSoundAtTransform(KMSoundOverride.SoundEffect.ButtonPress, ingredients[screenIndex].transform);
-        ingredients[screenIndex].AddInteractionPunch(InteractionPunchIntensityModifier);
+        ingredients[screenIndex].AddInteractionPunch(_interactionPunchIntensity);
         var ingIndex = ingIndices[screenIndex];
         var slot = slot2active ? slot2input : slot1input;
         slot.Ingredients[ingIndex]++;
@@ -144,53 +215,48 @@ void Awake()
     {
         // Shuffle up the ingredients
         ingIndices = Shuffle(Enumerable.Range(0, 5).ToArray());
-        Debug.LogFormat("[Bartending #{0}] Ingredients are: {1}", moduleId, string.Join(", ", ingIndices.Select(ix => ingNames[ix]).ToArray()));
+        //ingIndices = ingTest;
+        Debug.LogFormat("[Bartending #{0}] Ingredients are: {1}", _moduleId, string.Join(", ", ingIndices.Select(ix => _ingNames[ix]).ToArray()));
 
         // Assign the screen-frame textures for the ingredients
         foreach (int i in ingIndices)
             screens[i].material.mainTexture = ingredientcolor[ingIndices[i]];
 
-        var patron = _customerPreferences[((ingIndices[0] + 1) * 2 + (ingIndices[1] + 1)) % 10];
-        currentPatron = patron.Customer;
-        var drink1Index = ((ingIndices[3] + 1) * 2 + (ingIndices[4] + 1)) % 7;
+        currentPatron = (_ingredientValues[ingIndices[0]] * 2 + _ingredientValues[ingIndices[1]]) % 10;
+        var drink1Index = (_ingredientValues[ingIndices[3]] * 2 + _ingredientValues[ingIndices[4]]) % 7;
         if (drink1Index > 0)
             drink1Index--;
-        Debug.LogFormat("[Bartending #{0}] You are now serving {1}.", moduleId, currentPatron);
+        Debug.LogFormat("[Bartending #{0}] You are now serving {1}.", _moduleId, _patronNames[currentPatron]);
 
-        expectedDrink1 = FindRecipeOrBottled(patron.DrinkPreference[drink1Index]);
+        expectedDrink1 = _customerPreferences[currentPatron][drink1Index];
 
-        if (Bomb.GetSerialNumber().Intersect("CH4S3R").Count() >= 3)
+        if (Bomb.GetSerialNumber().Intersect(_chaser).Count() >= 3)
         {
-            var drink2Index = (drink1Index + ingIndices[2] + 1) % 6;
+            var drink2Index = (drink1Index + _ingredientValues[ingIndices[2]]) % 6;
             if (drink2Index < drink1Index)
             {
                 expectedDrink2 = expectedDrink1;
-                expectedDrink1 = FindRecipeOrBottled(patron.DrinkPreference[drink2Index]);
+                expectedDrink1 = _customerPreferences[currentPatron][drink2Index];
             }
             else
             {
-                expectedDrink2 = FindRecipeOrBottled(patron.DrinkPreference[drink2Index]);
+                expectedDrink2 = _customerPreferences[currentPatron][drink2Index];
             }
         }
         else
         {
-            expectedDrink1 = FindRecipeOrBottled(patron.DrinkPreference[drink1Index]);
-            expectedDrink2 = new Recipe { Name = null, State = DrinkState.Unprepared };
+            expectedDrink1 = _customerPreferences[currentPatron][drink1Index];
+            expectedDrink2 = null;
         }
 
-        bigDrinkExpected = Bomb.GetSerialNumber().Intersect("B1G").Count() > 0;
+        bigDrinkExpected = Bomb.GetSerialNumber().Intersect(_big).Count() > 0;
 
-        Debug.LogFormat("[Bartending #{0}] The first drink is a {1}{2}.{3}", moduleId, expectedDrink1.Name,
-            expectedDrink2.Name != null ? " and the second drink is a " + expectedDrink2.Name : "",
-            bigDrinkExpected ? " Ingredients are expected to be doubled." : "");
-    }
-
-    private Recipe FindRecipeOrBottled(string name)
-    {
-        var recipe = _Drinktionary.FirstOrDefault(drink => drink.Name == name);
-        if (recipe != null)
-            return recipe;
-        return new Recipe { Name = name, State = DrinkState.Bottled };
+        if (expectedDrink2 == null)
+            Debug.LogFormat(@"[Bartending #{0}] The expected drink is a {1}.", _moduleId, expectedDrink1.Name);
+        else
+            Debug.LogFormat(@"[Bartending #{0}] The expected drinks are {1} in slot 1 and {2} in slot 2.", _moduleId, expectedDrink1.Name, expectedDrink2.Name);
+        if (bigDrinkExpected)
+            Debug.LogFormat(@"[Bartending #{0}] Ingredients are expected to be doubled.", _moduleId);
     }
 
     void Startmixing()
@@ -198,7 +264,7 @@ void Awake()
         if (_IsSolved)
             return;
         Audio.PlayGameSoundAtTransform(KMSoundOverride.SoundEffect.ButtonPress, mix.transform);
-        mix.AddInteractionPunch(InteractionPunchIntensityModifier);
+        mix.AddInteractionPunch(_interactionPunchIntensity);
         if (mixing)
         {
             // This will cause the coroutine to end
@@ -213,7 +279,7 @@ void Awake()
         }
         else
         {
-            Debug.LogFormat("[Bartending #{0}] You cannot mix a drink twice in the same slot. Please trash the drink you are trying to mix and try again.", moduleId);
+            Debug.LogFormat("[Bartending #{0}] You cannot mix a drink twice in the same slot. Please trash the drink you are trying to mix and try again.", _moduleId);
         }
     }
 
@@ -235,32 +301,32 @@ void Awake()
         if (elapsedSeconds <= 3)
         {
             input.State = DrinkState.Failed;
-            mixerScreen.sprite = DrinkSprites[5];
-            Debug.LogFormat("[Bartending #{0}] You did not mix the drink for slot {1} long enough!", moduleId, slot);
+            mixerScreen.sprite = DrinkSprites[_failedDrinkSpriteIndex];
+            Debug.LogFormat("[Bartending #{0}] You did not mix the drink for slot {1} long enough!", _moduleId, slot);
         }
         else if (elapsedSeconds <= 10)
         {
             input.State = elapsedSeconds < 7 ? DrinkState.Mixed : DrinkState.Blended;
-            var matchingRecipe = _Drinktionary.FirstOrDefault(rec => input.IsSameRecipeAs(rec, false) || input.IsSameRecipeAs(rec, true));
+            var matchingRecipe = _drinktionary.FirstOrDefault(rec => input.IsSameRecipeAs(rec, false) || input.IsSameRecipeAs(rec, true));
             if (matchingRecipe != null)
             {
-                mixerScreen.sprite = DrinkSprites[matchingRecipe.SpriteIndex];
-                input.Name = matchingRecipe.Name;
-                Debug.LogFormat("[Bartending #{0}] You {1} the slot {2} drink!", moduleId, input.State == DrinkState.Blended ? "blended" : "mixed", slot);
-                Debug.LogFormat("[Bartending #{0}] You created a {1}{2}!", moduleId, input.IsSameRecipeAs(matchingRecipe, true) ? "big " : "", input.Name);
+                mixerScreen.sprite = DrinkSprites[matchingRecipe.Drink.SpriteIndex];
+                input.Drink = matchingRecipe.Drink;
+                Debug.LogFormat("[Bartending #{0}] You {1} the slot {2} drink!", _moduleId, input.State == DrinkState.Blended ? "blended" : "mixed", slot);
+                Debug.LogFormat("[Bartending #{0}] You created a {1}{2}!", _moduleId, input.IsSameRecipeAs(matchingRecipe, true) ? "big " : "", input.Drink.Name);
             }
             else
             {
                 input.State = DrinkState.Failed;
-                mixerScreen.sprite = DrinkSprites[5];
-                Debug.LogFormat("[Bartending #{0}] You {1} the slot {2} drink but it didn't match a known recipe! Your attempted drink was: {3}", moduleId, input.State == DrinkState.Blended ? "blended" : "mixed", slot, input.LoggingString(ingNames));
+                mixerScreen.sprite = DrinkSprites[_failedDrinkSpriteIndex];
+                Debug.LogFormat("[Bartending #{0}] You {1} the slot {2} drink but it didn't match a known recipe! Your attempted drink was: {3}", _moduleId, input.State == DrinkState.Blended ? "blended" : "mixed", slot, input.LoggingString(_ingNames));
             }
         }
         else
         {
             input.State = DrinkState.Failed;
-            mixerScreen.sprite = DrinkSprites[5];
-            Debug.LogFormat("[Bartending #{0}] You mixed the drink for slot {1} too long!", moduleId, slot);
+            mixerScreen.sprite = DrinkSprites[_failedDrinkSpriteIndex];
+            Debug.LogFormat("[Bartending #{0}] You mixed the drink for slot {1} too long!", _moduleId, slot);
         }
     }
 
@@ -269,7 +335,7 @@ void Awake()
         if (_IsSolved)
             return;
         Audio.PlayGameSoundAtTransform(KMSoundOverride.SoundEffect.ButtonPress, trash.transform);
-        trash.AddInteractionPunch(InteractionPunchIntensityModifier);
+        trash.AddInteractionPunch(_interactionPunchIntensity);
         StopAllCoroutines();
         mixing = false;
         var input = slot2active ? slot2input : slot1input;
@@ -282,7 +348,7 @@ void Awake()
             StartCoroutine(animateButton(icedTransform, false));
         if (input.Aged)
             StartCoroutine(animateButton(agedTransform, false));
-        input.Name = null;
+        input.Drink = null;
         input.Iced = false;
         input.Aged = false;
         input.State = DrinkState.Unprepared;
@@ -298,7 +364,7 @@ void Awake()
         if (_IsSolved)
             return;
         Audio.PlayGameSoundAtTransform(KMSoundOverride.SoundEffect.ButtonPress, iced.transform);
-        iced.AddInteractionPunch(InteractionPunchIntensityModifier);
+        iced.AddInteractionPunch(_interactionPunchIntensity);
         var input = slot2active ? slot2input : slot1input;
         input.Iced = !input.Iced;
         StartCoroutine(animateButton(icedTransform, input.Iced));
@@ -309,7 +375,7 @@ void Awake()
         if (_IsSolved)
             return;
         Audio.PlayGameSoundAtTransform(KMSoundOverride.SoundEffect.ButtonPress, aged.transform);
-        aged.AddInteractionPunch(InteractionPunchIntensityModifier);
+        aged.AddInteractionPunch(_interactionPunchIntensity);
         var input = slot2active ? slot2input : slot1input;
         input.Aged = !input.Aged;
         StartCoroutine(animateButton(agedTransform, input.Aged));
@@ -338,7 +404,7 @@ void Awake()
         if (_IsSolved)
             return;
         Audio.PlayGameSoundAtTransform(KMSoundOverride.SoundEffect.ButtonPress, bottled.transform);
-        bottled.AddInteractionPunch(InteractionPunchIntensityModifier);
+        bottled.AddInteractionPunch(_interactionPunchIntensity);
         bottleDrinkMenuVisible = true;
         BottledScreen.SetActive(true);
         mainButtonToggle();
@@ -348,7 +414,7 @@ void Awake()
     void closeMenu()
     {
         Audio.PlayGameSoundAtTransform(KMSoundOverride.SoundEffect.ButtonPress, close.transform);
-        close.AddInteractionPunch(InteractionPunchIntensityModifier);
+        close.AddInteractionPunch(_interactionPunchIntensity);
         bottleDrinkMenuVisible = false;
         BottledScreen.SetActive(false);
         mainButtonToggle();
@@ -394,10 +460,10 @@ void Awake()
         if (_IsSolved)
             return;
         Audio.PlayGameSoundAtTransform(KMSoundOverride.SoundEffect.ButtonPress, slot1.transform);
-        slot1.AddInteractionPunch(InteractionPunchIntensityModifier);
-        Debug.LogFormat("[Bartending #{0}] You switched to slot {1}.", moduleId, slot2 ? 2 : 1);
+        slot1.AddInteractionPunch(_interactionPunchIntensity);
+        Debug.LogFormat("[Bartending #{0}] You switched to slot {1}.", _moduleId, slot2 ? 2 : 1);
         slot2active = slot2;
-        for (int i = 0; i < ingNames.Length; i++)
+        for (int i = 0; i < _ingNames.Length; i++)
             ingValuesText[i].text = (slot2 ? slot2input : slot1input).Ingredients[ingIndices[i]].ToString();
         MixerScreen1.gameObject.SetActive(!slot2);
         MixerScreen2.gameObject.SetActive(slot2);
@@ -416,13 +482,13 @@ void Awake()
 
     void BottledDrinkSelection(int i)
     {
-        BottledOptions[i].AddInteractionPunch(InteractionPunchIntensityModifier);
+        BottledOptions[i].AddInteractionPunch(_interactionPunchIntensity);
         var mixerScreen = slot2active ? MixerScreen2 : MixerScreen1;
         var input = slot2active ? slot2input : slot1input;
-        Debug.LogFormat("[Bartending #{0}] You pressed {1} which is now in slot {2}!", moduleId, bottledOptions[i], slot2active ? 2 : 1);
-        input.Name = bottledOptions[i];
+        Debug.LogFormat("[Bartending #{0}] You pressed {1} which is now in slot {2}!", _moduleId, _bottledOptions[i].Name, slot2active ? 2 : 1);
+        input.Drink = _bottledOptions[i];
         input.State = DrinkState.Bottled;
-        mixerScreen.sprite = DrinkSprites[i];
+        mixerScreen.sprite = DrinkSprites[input.Drink.SpriteIndex];
         closeMenu();
     }
 
@@ -435,15 +501,15 @@ void Awake()
 
         for (int slot = 0; slot < 2; slot++)
         {
-            var preparedDrink = slot == 1 ? slot2input : slot1input;
+            var prepared = slot == 1 ? slot2input : slot1input;
             var expectedDrink = slot == 1 ? expectedDrink2 : expectedDrink1;
 
-            if (preparedDrink.State == DrinkState.Bottled)
+            if (prepared.State == DrinkState.Bottled)
             {
-                Debug.LogFormat("[Bartending #{0}] You served {1}. {2} wanted {3}.", moduleId, preparedDrink.Name, currentPatron, expectedDrink.Name);
-                if (preparedDrink.Name == expectedDrink.Name)
+                Debug.LogFormat("[Bartending #{0}] You served a {1}. {2} wanted {3}.", _moduleId, prepared.Drink.Name, _patronNames[currentPatron], expectedDrink == null ? "nothing" : expectedDrink.Name);
+                if (prepared.Drink == expectedDrink)
                 {
-                    Debug.LogFormat("[Bartending #{0}] The {1} drink is correct!", moduleId, slot == 0 ? "first" : "second");
+                    Debug.LogFormat("[Bartending #{0}] The {1} drink is correct!", _moduleId, slot == 0 ? "first" : "second");
                 }
                 else
                 {
@@ -451,20 +517,27 @@ void Awake()
                     return;
                 }
             }
-            else if (preparedDrink.State == DrinkState.Mixed || preparedDrink.State == DrinkState.Blended)
+            else if (prepared.State == DrinkState.Mixed || prepared.State == DrinkState.Blended)
             {
-                if (expectedDrink.State == DrinkState.Bottled)
+                if (expectedDrink == null)
                 {
-                    Debug.LogFormat("[Bartending #{0}] You served a {3}, but {1} wanted a {2}.", moduleId, currentPatron, expectedDrink.Name, preparedDrink.Name);
+                    Debug.LogFormat("[Bartending #{0}] You served a {2}, but {1} didn’t want a second drink.", _moduleId, _patronNames[currentPatron], prepared.Drink.Name);
                     StrikeAndRegenerate();
                     return;
                 }
-                var isBigDrink = preparedDrink.IsSameRecipeAs(expectedDrink, true);
-                Debug.LogFormat("[Bartending #{0}] You served a {1}{2} ({3}). {4} wanted a {5}{6}.", moduleId,
-                    isBigDrink ? "big " : "", preparedDrink.Name, preparedDrink.LoggingString(ingNames), currentPatron, bigDrinkExpected ? "big " : "", expectedDrink.Name);
-                if (preparedDrink.Name == expectedDrink.Name && isBigDrink == bigDrinkExpected)
+                if (expectedDrink.Bottled)
                 {
-                    Debug.LogFormat("[Bartending #{0}] The {1} drink is correct!", moduleId, slot == 0 ? "first" : "second");
+                    Debug.LogFormat("[Bartending #{0}] You served a {3}, but {1} wanted a {2}.", _moduleId, _patronNames[currentPatron], expectedDrink.Name, prepared.Drink.Name);
+                    StrikeAndRegenerate();
+                    return;
+                }
+                var expectedRecipe = _drinktionary.First(rec => rec.Drink == expectedDrink);
+                var isBigDrink = prepared.IsSameRecipeAs(expectedRecipe, true);
+                Debug.LogFormat("[Bartending #{0}] You served a {1}{2} ({3}). {4} wanted a {5}{6}.", _moduleId,
+                    isBigDrink ? "big " : "", prepared.Drink.Name, prepared.LoggingString(_ingNames), _patronNames[currentPatron], bigDrinkExpected ? "big " : "", expectedDrink.Name);
+                if (prepared.Drink == expectedDrink && isBigDrink == bigDrinkExpected)
+                {
+                    Debug.LogFormat("[Bartending #{0}] The {1} drink is correct!", _moduleId, slot == 0 ? "first" : "second");
                 }
                 else
                 {
@@ -472,36 +545,36 @@ void Awake()
                     return;
                 }
             }
-            else if (preparedDrink.State == DrinkState.Unprepared)
+            else if (prepared.State == DrinkState.Unprepared)
             {
-                Debug.LogFormat("[Bartending #{0}] You served no drink in slot {1}. {2} wanted {3}.", moduleId, slot == 0 ? 1 : 2, currentPatron, expectedDrink2.State == DrinkState.Unprepared ? "1 drink" : "2 drinks");
-                if (expectedDrink.State == DrinkState.Unprepared)
+                Debug.LogFormat("[Bartending #{0}] You served no drink in slot {1}. {2} wanted {3}.", _moduleId, slot == 0 ? 1 : 2, _patronNames[currentPatron], expectedDrink2 == null ? "1 drink" : "2 drinks");
+                if (expectedDrink == null)
                 {
-                    Debug.LogFormat("[Bartending #{0}] The {1} drink is correct!", moduleId, slot == 0 ? "first" : "second");
+                    Debug.LogFormat("[Bartending #{0}] The {1} drink is correct!", _moduleId, slot == 0 ? "first" : "second");
                 }
                 else
                 {
-                    Debug.LogFormat("[Bartending #{0}] You served an unprepared drink when {1} expected a drink! Strike!", moduleId, currentPatron);
+                    Debug.LogFormat("[Bartending #{0}] You served no drink when {1} expected a drink! Strike!", _moduleId, _patronNames[currentPatron]);
                     StrikeAndRegenerate();
                     return;
                 }
             }
             else
             {
-                Debug.LogFormat("[Bartending #{0}] You tried to serve a failed drink!", moduleId);
+                Debug.LogFormat("[Bartending #{0}] You tried to serve a failed drink!", _moduleId);
                 StrikeAndRegenerate();
                 return;
             }
         }
 
         // Both drinks were correct!
-        Debug.LogFormat("[Bartending #{0}] Drinks correctly served! Module solved!", moduleId);
+        Debug.LogFormat("[Bartending #{0}] Drinks correctly served! Module solved!", _moduleId);
         Module.HandlePass();
         if (Bomb.GetSolvedModuleNames().Count < Bomb.GetSolvableModuleNames().Count)
             Audio.PlaySoundAtTransform("solve", transform);
         for (int i = 0; i < screens.Length; i++)
             screens[i].material.mainTexture = GrayScreen;
-        for (int i = 0; i < ingNames.Length; i++)
+        for (int i = 0; i < _ingNames.Length; i++)
             ingValuesText[i].text = _Blank.ToString();
         _IsSolved = true;
     }
@@ -531,6 +604,7 @@ void Awake()
 
 #pragma warning disable 414
     private readonly string TwitchHelpMessage = @"!{0} add 1 9, 2 2 [add 9 times ingredient 1, 2 times ingredient 2] | !{0} slot 1 | !{0} slot 2 | !{0} trash | !{0} iced | !{0} aged | !{0} mix 4 [mix for that many seconds] | !{0} bottled A Fedora | !{0} serve";
+    private bool TwitchShouldCancelCommand;
 #pragma warning restore 414
 
     public IEnumerator ProcessTwitchCommand(string command)
@@ -544,12 +618,16 @@ void Awake()
                 .Select(inf => Regex.Match(inf, @"^\s*(\d+)\s+(\d+)\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
                 .Select(m => new { Ingredient = int.Parse(m.Groups[1].Value), Amount = int.Parse(m.Groups[2].Value) })
                 .ToArray();
-            if (data.Any(inf => inf.Ingredient < 1 || inf.Ingredient > 6 || inf.Amount < 1 || inf.Amount > 20))
+            if (data.Any(inf => inf.Ingredient < 1 || inf.Ingredient > 5 || inf.Amount < 1 || inf.Amount > 20))
             {
-                yield return "sendtochaterror Ingredients must be 1–6 (reading order) and amount must be 1–20.";
+                yield return "sendtochaterror Ingredients must be 1–5 (reading order) and amount must be 1–20.";
                 yield break;
             }
             yield return null;
+            if (bottleDrinkMenuVisible)
+                yield return new[] { close };
+            if (mixing)
+                yield return new[] { mix };
             yield return data.SelectMany(inf => Enumerable.Repeat(ingredients[inf.Ingredient - 1], inf.Amount)).ToArray();
             yield break;
         }
@@ -560,6 +638,8 @@ void Awake()
             yield return null;
             if (bottleDrinkMenuVisible)
                 yield return new[] { close };
+            if (mixing)
+                yield return new[] { mix };
             yield return new[] { match.Groups[1].Value == "1" ? slot1 : slot2 };
         }
 
@@ -569,18 +649,46 @@ void Awake()
             yield return null;
             if (bottleDrinkMenuVisible)
                 yield return new[] { close };
+            if (mixing)
+                yield return new[] { mix };
             yield return new[] { trash };
+        }
+
+        else if (Regex.IsMatch(command, @"^\s*stopmixing\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
+        {
+            if (mixing)
+            {
+                yield return null;
+                yield return new[] { mix };
+            }
         }
 
         // !{0} mix 4 [mix for that many seconds]
         else if ((match = Regex.Match(command, @"^\s*mix\s+(\d+)\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)).Success)
         {
+            if (mixing)
+            {
+                yield return "sendtochaterror The drink is already mixing. To cancel it, use: !{0} stopmixing";
+                yield break;
+            }
+
             yield return null;
             if (bottleDrinkMenuVisible)
                 yield return new[] { close };
+
+            mix.OnInteract();
+            var remainingDuration = float.Parse(match.Groups[1].Value);
+            TwitchShouldCancelCommand = false;
+
+            while (remainingDuration > 0 && !TwitchShouldCancelCommand)
+            {
+                yield return null;
+                remainingDuration -= Time.deltaTime;
+            }
             yield return new[] { mix };
-            yield return new WaitForSeconds(int.Parse(match.Groups[1].Value));
-            yield return new[] { mix };
+
+            if (TwitchShouldCancelCommand)
+                yield return "cancelled";
         }
 
         // !{0} iced
@@ -589,6 +697,8 @@ void Awake()
             yield return null;
             if (bottleDrinkMenuVisible)
                 yield return new[] { close };
+            if (mixing)
+                yield return new[] { mix };
             yield return new[] { iced };
         }
 
@@ -598,6 +708,8 @@ void Awake()
             yield return null;
             if (bottleDrinkMenuVisible)
                 yield return new[] { close };
+            if (mixing)
+                yield return new[] { mix };
             yield return new[] { aged };
         }
 
@@ -616,6 +728,8 @@ void Awake()
             }
 
             yield return null;
+            if (mixing)
+                yield return new[] { mix };
             if (!bottleDrinkMenuVisible)
                 yield return new[] { bottled };
             yield return new[] { button };
@@ -627,6 +741,8 @@ void Awake()
             yield return null;
             if (bottleDrinkMenuVisible)
                 yield return new[] { close };
+            if (mixing)
+                yield return new[] { mix };
             yield return new[] { serve };
         }
     }
