@@ -293,7 +293,7 @@ public class Maker : MonoBehaviour
         while (mixing)
         {
             elapsedTime += Time.deltaTime;
-            mixerScreen.transform.localEulerAngles = new Vector3(0, 0, Mathf.Sin(elapsedTime / (elapsedTime < 7 ? SlowRotationPeriod : FastRotationPeriod) * Mathf.PI * 2) * MaxTilt);
+            mixerScreen.transform.localEulerAngles = new Vector3(0, 0, Mathf.Sin(elapsedTime / (elapsedTime < 7 ? _slowRotationPeriod : _fastRotationPeriod) * Mathf.PI * 2) * _maxTilt);
             yield return null;
         }
         mixerScreen.transform.localEulerAngles = new Vector3(0, 0, 0);
@@ -356,7 +356,7 @@ public class Maker : MonoBehaviour
 
         var mixerScreen = slot2active ? MixerScreen2 : MixerScreen1;
         mixerScreen.sprite = DrinkSprites[4];
-        mixerScreen.transform.localEulerAngles = new Vector3(90, 0, 0);
+        mixerScreen.transform.localEulerAngles = new Vector3(0, 0, 0);
     }
 
     void ice()
